@@ -1,22 +1,32 @@
 import praw
 import time
+import os
 import pandas as pd
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+USER_AGENT = os.getenv('USER_AGENT')
+USERNAME = os.getenv('USERNAME')
+PASSWORD = os.getenv('PASSWORD')
 
 # Create reddit bot
 reddit = praw.Reddit(
-    client_id='NEcQn8XXXJSkl3Z4EcC0zQ',
-    client_secret='Y-Xd67JMc9e-OFYkqcP_Y0Lps55_WA',
-    username='BULLBOT_AI',
-    password='HTN_BullBot_2025!!!',
-    user_agent='BULLBOT/0.1 by u/BULLBOT_AI'
+    client_id=CLIENT_ID,
+    client_secret=CLIENT_SECRET,
+    username=USERNAME,
+    password=PASSWORD,
+    user_agent=USER_AGENT
 )
 
 # Monitor posts
 print("Listening for posts ...\n")
 subreddit = reddit.subreddit("all")
 
-max_posts = 10
-count = 0
+# max_posts = 10
+# count = 0
 post_details = []
 
 # Listen to new posts in specified subreddit until we reach max capacity
@@ -31,9 +41,9 @@ for post in subreddit.stream.submissions(skip_existing=True):
             'permalink': post.permalink
         })
 
-        count += 1
-        if count >= max_posts:
-            break
+        # count += 1
+        # if count >= max_posts:
+        #     break
 
         # Pause to avoid hitting Reddit too fast
         time.sleep(2)
