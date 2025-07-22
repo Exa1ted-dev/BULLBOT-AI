@@ -1,11 +1,14 @@
-#Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 
-#Notebook checkpoints
+# Notebook checkpoints
 .ipynb_checkpoints
 
-#Virtual environments
+# Virtual environments
 venv/
 
-#Model artifacts
+# Environment variables
+.env/
+
+# Model artifacts
 bullbot-model/
