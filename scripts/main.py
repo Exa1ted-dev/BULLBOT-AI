@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env
 load_dotenv()
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-USER_AGENT = os.getenv('USER_AGENT')
-USERNAME = os.getenv('USERNAME')
-PASSWORD = os.getenv('PASSWORD')
+CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
+CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
+USER_AGENT = os.getenv('REDDIT_USER_AGENT')
+USERNAME = os.getenv('REDDIT_USERNAME')
+PASSWORD = os.getenv('REDDIT_PASSWORD')
 
 # Create reddit bot
 reddit = praw.Reddit(
@@ -51,6 +51,9 @@ for post in subreddit.stream.submissions(skip_existing=True):
     except Exception as e:
         print(f"Error reading post: {e}")
         time.sleep(5)
+
+
+print(post_details)
 
 # Save scraped posts in a CSV file for testing
 scraped_posts_df = pd.DataFrame(post_details)
