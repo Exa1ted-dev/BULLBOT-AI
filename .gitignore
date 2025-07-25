@@ -6,7 +6,3 @@ venv/
 
 # Environment variables
 .env
-
-# Model training files
-colab/
-training-data/

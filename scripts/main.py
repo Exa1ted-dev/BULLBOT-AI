@@ -5,77 +5,90 @@ import requests
 import pandas as pd
 from dotenv import load_dotenv
 
+#region #------------------------------------- BEGIN LOAD ENVIRONMENT VARIABLES -------------------------------------#
+
 # Load environment variables from .env
 load_dotenv()
-
 # Reddit
 CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
 USER_AGENT = os.getenv('REDDIT_USER_AGENT')
 USERNAME = os.getenv('REDDIT_USERNAME')
 PASSWORD = os.getenv('REDDIT_PASSWORD')
-# SerpAPI
-SERP_API_KEY  = os.getenv('SERP_API_KEY')
+# Tavily
+TAVILY_API_KEY  = os.getenv('Tavily_API_KEY')
 # Hugging Face
 HF_API_KEY = os.getenv('HF_API_KEY')
 
+#endregion #------------------------------------- END LOAD ENVIRONMENT VARIABLES ------------------------------------#
+
+#region #----------------------------------------- BEGIN METHOD DEFINITIONS -----------------------------------------#
 
 # Search google for current, relevant sources to base responses on
-def search_serpapi(query, num_results=5):
-    serpapi_url = 'https://serpapi.com/search'
-    params = {
-        'q': query,
-        'api_key': SERP_API_KEY,
-        'num': num_results,
-        'engine': 'google',
+def tavily_search(query):
+    tavily_url = 'https://api.tavily.com/search'
+    headers = {'Authorization': f'Bearer {TAVILY_API_KEY}'}
+    payload = {
+        'query': query,
+        'search_depth': 'advanced',
+        'max_results': 3,
+        'include_answer': True,
+        'include_raw_content': True,
     }
 
-    # Gather data from google search
-    response = requests.get(serpapi_url, params=params)
+    response = requests.post(tavily_url, json=payload, headers=headers)
     data = response.json()
 
-    # Format search results to use as AI response context
-    results = []
-    for result in data.get('organic_results', [])[:num_results]:
-        snippet = result.get('snippet', '')
-        title = result.get("title", "")
-        link = result.get("link", "")
-        results.append(f"{title}\n{snippet}\n{link}")
-
-    return '\n\n'.join(results)
-
-
-
-def detect_fake_news(post_title, post_body):
-    hf_url = 'https://api-inference.huggingface.co/models/jy46604790/Fake-News-Bert-Detect'
-    headers = {
-        'Authorization': f'Bearer {HF_API_KEY}'
+    # Return summarized answser w/ citations and article mini summary
+    return {
+        'answer': data.get('answer', ''),
+        'citations': [
+            {
+                'url': c['url'],
+                'title': c.get('title', ''),
+                'snippet': c.get('snippet') or c.get('content', '')[:500]
+            }
+            for c in data.get('citations', [])
+        ]
     }
-
-    combined_input = f"Title: {post_title}\n\nBody: {post_body}"
-    payload = {
-        'inputs': combined_input
-    }
+    
+# Access Hugging Face Spaces classification model to determine whether a post is likely true or false
+def classify_post_truth(post_title, post_body):
+    hf_classify_url = 'https://Exa1ted-dev-BULLBOT-Post-Classification.hf.space/predict'
+    full_text = f'Title: {post_title}\n\nBody: {post_body}'
+    payload = {'text': full_text}
 
     try:
-        response = requests.post(hf_url, headers=headers, json=payload)
-        response.raise_for_status()
+        response = requests.post(hf_classify_url, json=payload)
+        response.raise_for_status() # Raise error if not status 200
         result = response.json()
+        return result # {'label': 'FAKE', 'confidence': 0.968}
+    except requests.RequestException as e:
+        print(f'Error during post classification request: {e}')
+        return None
 
-        if isinstance(result, list):
-            return result
-        else:
-            return 'ERROR', 0.0
-    except Exception as e:
-        print("Inference error: ", e)
-        return 'ERROR', 0.0
+# Find the scraped post with highest likelihood of being fake
+def find_fake_post(post_details, is_fake_buffer):
+    post_confidence_levels = []
+    fakest_post_index = -1
 
+    # Classify all posts and store confidence levels
+    for i in range(len(post_details)):
+        post_confidence_levels.append(classify_post_truth(post_details[i]['title'], post_details[i]['body_text']))
 
-
-def calculate_misinformation_chance(false_chance, true_chance):
-    return false_chance - true_chance
-
-
+    # Cycle through posts to find final fakest choice
+    for i in range(len(post_confidence_levels)):
+        if post_confidence_levels[i][0]['label'] == 'LABEL_0':
+            if post_confidence_levels[i][0]['score'] >= is_fake_buffer:
+                if fakest_post_index < 0:
+                    fakest_post_index = i
+                elif post_confidence_levels[i][0]['score'] > post_confidence_levels[fakest_post_index][0]['score']:
+                    fakest_post_index = i
+    
+    if fakest_post_index == -1:
+        return None
+    else:
+        return fakest_post_index
 
 # Scrape Reddit posts
 def scrape_reddit_posts(subreddits, post_details, max_posts):
@@ -107,7 +120,9 @@ def scrape_reddit_posts(subreddits, post_details, max_posts):
 
     return post_details
 
+#endregion #---------------------------------------- END METHOD DEFINITIONS -----------------------------------------#
 
+#region #------------------------------------- BEGIN BULLBOT POST ANALYSIS CODE -------------------------------------#
 
 # Create reddit bot
 reddit = praw.Reddit(
@@ -119,32 +134,23 @@ reddit = praw.Reddit(
 )
 
 # Scrape some new Reddit posts
+# Maybe filter out posts with too many words - prevents problems down the line like a cut off post being passed to the final model for analysis
 subreddits = reddit.subreddit("conspiracy") # Subreddits to scrape posts from
 post_details = [] # List of posts scraped
 max_posts = 15 # How many posts to scrape per loop
-
 post_details = scrape_reddit_posts(subreddits, post_details, max_posts)
 
-
 # Determine the most likely fake post of all scraped
-post_confidence_levels = []
-post_misinformation_chances = []
-fakest_post_index = 0
-for i in range(len(post_details)):
-    post_confidence_levels.append(detect_fake_news(post_details[i]['title'], post_details[i]['body_text']))
-    post_misinformation_chances.append(calculate_misinformation_chance(post_confidence_levels[i][0, post_confidence_levels[i][1]]))
+is_fake_buffer = 0.8 # Must have greater than 80% confidence to be considered fake
+chosen_post_index = find_fake_post(post_details, is_fake_buffer)
 
-for i in range(len(post_misinformation_chances)):
-    if post_misinformation_chances[i] >= post_misinformation_chances[fakest_post_index]:
-        fakest_post_index = i
-
-# Search google for relevant articles to correct the fakest post
-
-
-# Further summarize and extract article details
+# Search google for relevant articles to correct the post claim
+articles = tavily_search(post_details[chosen_post_index]['title'])
 
 # Pass post details and relevant context articles to AI model to correct
 
 # Reply to the post with a detailed and cited correction
 
 # Potentially save response to an external database for later review and display in a dashboard
+
+#endregion #------------------------------------ END BULLBOT POST ANALYSIS CODE -------------------------------------#
