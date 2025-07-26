@@ -1,14 +1,15 @@
-from supabase import create_client, Client
-from datetime import datetime, timezone
+from supabase import create_client
+from datetime import datetime, timezone, timedelta
 import config
 
 # Load environment variables
-SUPABASE_URL = config.SUPABASE_URL
-SUPABASE_KEY = config.SUPABASE_KEY
+SUPABASE_SERVICE_ROLE_KEY = config.SUPABASE_SERVICE_ROLE_KEY
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+# Save reply information in Supabase database
 def save_reply(subreddit: str, reddit_post_id: str, reddit_post_title: str, reply_text: str) -> bool:
+    url = "https://eppbwrtvihnxjtwooyzn.supabase.co"
+    supabase = create_client(url, SUPABASE_SERVICE_ROLE_KEY)
+
     # Check if reply exists to avoid duplicates
     existing = supabase.table('replies').select('*').eq('reddit_post_id', reddit_post_id).execute()
     if existing.data and len(existing.data) > 0:
@@ -23,7 +24,9 @@ def save_reply(subreddit: str, reddit_post_id: str, reddit_post_title: str, repl
         'created_at': datetime.now(timezone.utc).isoformat(),
     }).execute()
 
-    if response.status_code == 201 or response.status_code == 200:
+    if response.error is None:
         return True
     else:
+        print("Error inserting reply:", response.error)
         return False
+    
