@@ -10,23 +10,24 @@ def save_reply(subreddit: str, reddit_post_id: str, reddit_post_title: str, repl
     url = "https://eppbwrtvihnxjtwooyzn.supabase.co"
     supabase = create_client(url, SUPABASE_SERVICE_ROLE_KEY)
 
-    # Check if reply exists to avoid duplicates
-    existing = supabase.table('replies').select('*').eq('reddit_post_id', reddit_post_id).execute()
-    if existing.data and len(existing.data) > 0:
-        return False # Already saved reply
-    
-    # Insert new reply
-    response = supabase.table('replies').insert({
-        'subreddit': subreddit,
-        'reddit_post_id': reddit_post_id,
-        'reddit_post_title': reddit_post_title,
-        'reply_text': reply_text,
-        'created_at': datetime.now(timezone.utc).isoformat(),
-    }).execute()
+    try:
+        # Check if reply exists to avoid duplicates
+        existing = supabase.table('replies').select('*').eq('reddit_post_id', reddit_post_id).execute()
+        if existing.data and len(existing.data) > 0:
+            return False # Already saved reply
+        
+        # Insert new reply
+        response = supabase.table('replies').insert({
+            'subreddit': subreddit,
+            'reddit_post_id': reddit_post_id,
+            'reddit_post_title': reddit_post_title,
+            'reply_text': reply_text,
+            'created_at': datetime.now(timezone.utc).isoformat(),
+        }).execute()
 
-    if response.error is None:
-        return True
-    else:
-        print("Error inserting reply:", response.error)
+        return bool(response.data) # If data returned, insert succeeded
+    
+    except Exception as e:
+        print(f"Error inserting reply: {e}")
         return False
     
