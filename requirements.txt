@@ -4,3 +4,4 @@ protobuf==3.20.3
 praw==7.8.1
 python-dotenv==1.1.1
 supabase==2.17.0
+newspaper3k==0.2.8

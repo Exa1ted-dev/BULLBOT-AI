@@ -14,6 +14,9 @@ PASSWORD = os.getenv('REDDIT_PASSWORD')
 # Tavily
 TAVILY_API_KEY  = os.getenv('Tavily_API_KEY')
 
+#SerpAPI
+SERPAPI_KEY = os.getenv('SERPAPI_KEY')
+
 # Hugging Face
 HF_API_KEY = os.getenv('HF_API_KEY')
 

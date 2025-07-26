@@ -19,29 +19,6 @@ reddit = praw.Reddit(
     user_agent=USER_AGENT
 )
 
-# Find the scraped post with highest likelihood of being fake
-def find_fake_post(post_details, is_fake_buffer):
-    post_confidence_levels = []
-    fakest_post_index = -1
-
-    # Classify all posts and store confidence levels
-    for i in range(len(post_details)):
-        post_confidence_levels.append(ai_services.classify_post_truth(post_details[i]['title'], post_details[i]['body_text']))
-
-    # Cycle through posts to find final fakest choice
-    for i in range(len(post_confidence_levels)):
-        if post_confidence_levels[i][0]['label'] == 'LABEL_0':
-            if post_confidence_levels[i][0]['score'] >= is_fake_buffer:
-                if fakest_post_index < 0:
-                    fakest_post_index = i
-                elif post_confidence_levels[i][0]['score'] > post_confidence_levels[fakest_post_index][0]['score']:
-                    fakest_post_index = i
-    
-    if fakest_post_index == -1:
-        return None
-    else:
-        return fakest_post_index
-
 # Scrape Reddit posts
 def scrape_reddit_posts(subreddits, post_details, max_posts):
     post_count = 0 # No scraped posts yet this loop
@@ -57,6 +34,10 @@ def scrape_reddit_posts(subreddits, post_details, max_posts):
             if approx_token_count > 450:
                 continue
 
+            #Skip posts with no body text
+            if post.selftext == '':
+                continue
+
             # Store scraped posts
             post_details.append({
                 'id': post.id,
@@ -66,6 +47,7 @@ def scrape_reddit_posts(subreddits, post_details, max_posts):
                 'permalink': post.permalink,
                 'subreddit': post.subreddit.display_name
             })
+            print(post_details)
 
             # Keep track of how many posts we have scraped during the loop
             post_count += 1
@@ -80,6 +62,29 @@ def scrape_reddit_posts(subreddits, post_details, max_posts):
             time.sleep(5)
 
     return post_details
+
+# Find the scraped post with highest likelihood of being fake
+def find_fake_post(post_details, is_fake_buffer):
+    post_confidence_levels = []
+    fakest_post_index = -1
+
+    # Classify all posts and store confidence levels
+    for i in range(len(post_details)):
+        post_confidence_levels.append(ai_services.classify_post_truth(post_details[i]['title'], post_details[i]['body_text']))
+
+    # Cycle through posts to find final fakest choice
+    for i in range(len(post_confidence_levels)):
+        if post_confidence_levels[i]['label'] == 'LABEL_0':
+            if post_confidence_levels[i]['confidence'] >= is_fake_buffer:
+                if fakest_post_index < 0:
+                    fakest_post_index = i
+                elif post_confidence_levels[i]['confidence'] > post_confidence_levels[fakest_post_index]['confidence']:
+                    fakest_post_index = i
+    
+    if fakest_post_index == -1:
+        return None
+    else:
+        return fakest_post_index
 
 # Reply to the post
 def reply(post_details, post_index, post_reply):
