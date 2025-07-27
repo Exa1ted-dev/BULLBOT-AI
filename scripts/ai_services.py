@@ -28,7 +28,7 @@ def serpapi_search(query):
         "api_key": SERPAPI_KEY,
         "engine": "google",
         "num": 3,
-        "hl": "en"
+        "hl": "en",
     }
 
     response = requests.get("https://serpapi.com/search", params=params)
@@ -38,9 +38,7 @@ def serpapi_search(query):
 
     return [
         {
-            "title": r.get("title"),
-            "url": r.get("link"),
-            "snippet": r.get("snippet", "")
+            "url": r.get("link")
         }
         for r in results
     ]
@@ -50,7 +48,7 @@ def generate_reply(chosen_post_index, post_details, articles):
     debunk_payload = {
         'post_title': post_details[chosen_post_index]['title'],
         'post_body': post_details[chosen_post_index]['body_text'],
-        'articles': articles
+        'articles': articles,
     }
     
     response = requests.post('https://Exa1ted-dev-BULLBOT-Response-Generation.hf.space/predict', json=debunk_payload)

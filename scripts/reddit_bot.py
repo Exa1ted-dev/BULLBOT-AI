@@ -2,6 +2,11 @@ import time
 import praw
 import ai_services
 import config
+import nltk
+from newspaper import Article
+
+# Download files for summarizing and extracting keywords
+nltk.download('punkt_tab')
 
 # Load environment variables
 CLIENT_ID = config.CLIENT_ID
@@ -85,6 +90,25 @@ def find_fake_post(post_details, is_fake_buffer):
         return None
     else:
         return fakest_post_index
+
+# Create summary of a provided article
+def summarize_article(url):
+    try:
+        article = Article(url)
+        article.download()
+        article.parse()
+        article.nlp()
+
+        return {
+            'title': article.title,
+            'summary': article.summary,
+            'text': article.text,
+            'url': url
+        }
+    
+    except Exception as e:
+        print(f"Failed to process {url}: {e}")
+        return None
 
 # Reply to the post
 def reply(post_details, post_index, post_reply):
