@@ -73,7 +73,7 @@ if __name__ == '__main__':
     main()
 
 # Future possibilities:
-# Switch to tiktoken tokenizer over huggingface to decrease processing time
 # Add image processing from posts for further context and more accurate analysis + can analyze image only posts
 # Add dashboard to view all responses created by the bot to date
-# Find a way to use more powerful models and reply to more posts per month - more impact
+# Find a way to reply to more posts per month
+# Stop bot for rest of month when out of Inference API credits or running too low to produce a good response
