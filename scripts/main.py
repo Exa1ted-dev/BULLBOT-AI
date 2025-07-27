@@ -1,55 +1,76 @@
+import time
 from reddit_bot import reddit, scrape_reddit_posts, find_fake_post, summarize_article, build_prompt, reply
 from ai_services import generate_reply, serpapi_search
 from database_handler import save_reply
 
-# Scrape some new Reddit posts
-print('begin scrape\n')
-subreddits = reddit.subreddit("conspiracy_commons+antiVaxxers+COVID19_conspiracy+alternativehealth+WallStreetBets+FlatEarth+woo") # Subreddits to scrape posts from
-post_details = [] # List of posts scraped
-max_posts = 10 # How many posts to scrape per loop
-post_details = scrape_reddit_posts(subreddits, post_details, max_posts)
+def run_bot():
+    # ------------------------------------------ Bot Code ------------------------------------------ #
+    print('Running new bot cycle...\n')
 
-# Determine the most likely fake post of all scraped
-print('begin classify\n')
-is_fake_buffer = 0.92 # Must have greater than 92% confidence to be considered fake
-chosen_post_index = find_fake_post(post_details, is_fake_buffer)
+    # Scrape some new Reddit posts
+    print('begin scrape\n')
+    subreddits = reddit.subreddit("conspiracy_commons+antiVaxxers+COVID19_conspiracy+alternativehealth+WallStreetBets+FlatEarth+woo") # Subreddits to scrape posts from
+    post_details = [] # List of posts scraped
+    max_posts = 10 # How many posts to scrape per loop
+    post_details = scrape_reddit_posts(subreddits, post_details, max_posts)
 
-# Search Google for relevant articles to correct the post claim
-print('begin search\n')
-sources = serpapi_search(post_details[chosen_post_index]['title'])
+    # Determine the most likely fake post of all scraped
+    print('begin classify\n')
+    is_fake_buffer = 0.92 # Must have greater than 92% confidence to be considered fake
+    chosen_post_index = find_fake_post(post_details, is_fake_buffer)
 
-# Summarize and extract source details
-print('begin summarize\n')
-summaries = []
-for source in sources:
-    summaries.append(summarize_article(source['url']))
+    # Search Google for relevant articles to correct the post claim
+    print('begin search\n')
+    sources = serpapi_search(post_details[chosen_post_index]['title'])
 
-# Build the model final response prompt
-print('begin build prompt\n')
-prompt = build_prompt(post_details[chosen_post_index]['title'], post_details[chosen_post_index]['body_text'], summaries)
+    # Summarize and extract source details
+    print('begin summarize\n')
+    summaries = []
+    for source in sources:
+        summaries.append(summarize_article(source['url']))
 
-# Send prompt to Hugging Face Inference API and generate a response
-print('begin generate reply\n')
-post_reply = generate_reply(prompt)
+    # Build the model final response prompt
+    print('begin build prompt\n')
+    prompt = build_prompt(post_details[chosen_post_index]['title'], post_details[chosen_post_index]['body_text'], summaries)
 
-# Reply to the post with a detailed and cited correction
-print('begin comment\n')
-reply(post_details, chosen_post_index, post_reply)
+    # Send prompt to Hugging Face Inference API and generate a response
+    print('begin generate reply\n')
+    post_reply = generate_reply(prompt)
 
-# Save reply details in external database
-print('begin db store\n')
-success = save_reply(post_details['subreddit'],
-                     post_details['id'],
-                     post_details['title'],
-                     post_details['body_text'],
-                     post_reply,
-                     sources,
-                     )
+    # Reply to the post with a detailed and cited correction
+    print('begin comment\n')
+    reply(post_details, chosen_post_index, post_reply)
 
-if success:
-    print("Reply saved to Supabase successfully!")
-else:
-    print("Reply already exists or failed to save.")
+    # Save reply details in external database
+    print('begin db store\n')
+    success = save_reply(post_details['subreddit'],
+                        post_details['id'],
+                        post_details['title'],
+                        post_details['body_text'],
+                        post_reply,
+                        sources,
+                        )
+
+    if success:
+        print("Reply saved to Supabase successfully!")
+    else:
+        print("Reply already exists or failed to save.")
+
+    # ------------------------------------------ Bot Code ------------------------------------------ #
+
+def main():
+    sleep_in_mins = 10
+
+    while True:
+        try:
+            run_bot()
+        except Exception as e:
+            print(f"[ERROR] {e}")
+        
+        time.sleep(sleep_in_mins * 60)
+
+if __name__ == '__main__':
+    main()
 
 # Future possibilities:
 # Switch to tiktoken tokenizer over huggingface to decrease processing time
