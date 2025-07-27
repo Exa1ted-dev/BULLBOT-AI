@@ -1,4 +1,5 @@
 import requests
+import re
 import config
 
 # Load environment variables
@@ -43,25 +44,49 @@ def serpapi_search(query):
         for r in results
     ]
 
-# Generate a final, informed post reply
-def generate_reply(chosen_post_index, post_details, articles):
-    debunk_payload = {
-        'post_title': post_details[chosen_post_index]['title'],
-        'post_body': post_details[chosen_post_index]['body_text'],
-        'articles': articles,
-    }
-    
-    response = requests.post('https://Exa1ted-dev-BULLBOT-Response-Generation.hf.space/predict', json=debunk_payload)
+# Removes thinking text from the final model response
+def strip_thinking(text):
+    # Find text up to second think tag
+    match = re.search(r'(</think>.*?</think>)', text, re.DOTALL)
+    if match:
+        # Remove everything before second think tag
+        return text[match.end():].strip()
+    return text.strip()
 
-    # Check if request was successful and content exists
-    if response.status_code == 200 and response.text.strip():
-        try:
-            return response.json()
-        except ValueError:
-            print("❌ Failed to parse JSON. Response text:")
-            print(response.text)
-            return {"response": "Invalid JSON from model."}
-    else:
-        print(f"❌ Request failed with status {response.status_code}")
-        print("Response text:", response.text)
-        return {"response": f"Request failed or empty response: {response.status_code}"}
+# Generate a reply with Hugging Face Inference API
+def generate_reply(prompt):
+    API_URL = "https://router.huggingface.co/v1/chat/completions"
+    headers = {'Authorization': f'Bearer {HF_API_KEY}'}
+
+    debunk_payload = {
+        'messages': [
+            {
+                'role': 'system',
+                'content': (
+                    "You are a professional, neutral, and concise misinformation debunker. "
+                    "You respond in a clean, structured format. Do NOT include internal thoughts or <think> tags. "
+                    "Structure your response with these sections:\n\n"
+                    "**Claim**: Briefly restate the claim.\n"
+                    "**Evidence**: Summarize each source's relevant points (cited as [1], [2], etc.).\n"
+                    "**Analysis**: Explain why the claim is true or false based on the evidence.\n"
+                    "**Sources**: Provide the source urls along with their numbers ([1], [2], etc.).\n"
+                    "**Conclusion**: State clearly whether the claim is true, false, or misleading."
+                )
+            },
+            {
+                'role': 'user',
+                'content': prompt
+            }
+        ],
+        'model': 'deepseek-ai/DeepSeek-R1:novita'
+    }
+
+    response = requests.post(API_URL, headers=headers, json=debunk_payload)
+    result = response.json()
+
+    raw_result = result['choices'][0]['message']['content']
+    print(raw_result)
+
+    cleaned_result = strip_thinking(raw_result)
+
+    return cleaned_result

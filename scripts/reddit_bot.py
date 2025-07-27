@@ -5,7 +5,7 @@ import config
 import nltk
 from newspaper import Article
 
-# Download files for summarizing and extracting keywords
+# Download files for summarizing articles
 nltk.download('punkt_tab')
 
 # Load environment variables
@@ -109,6 +109,31 @@ def summarize_article(url):
     except Exception as e:
         print(f"Failed to process {url}: {e}")
         return None
+
+# Build the LLM prompt with the provided Reddit post and online sources
+def build_prompt(post_title, post_body, source_details):
+    prompt = f"""
+**Claim to fact-check:**
+
+**Title:** {post_title}  
+**Body:** {post_body}
+
+---
+
+**Evidence from trusted sources:**
+"""
+
+    for i, summary in enumerate(source_details, start=1):
+        prompt += f"[{i}] {summary['summary'].strip()}\n"
+
+    prompt += "\n**Source URLs:**\n"
+    for i, link in enumerate(source_details, start=1):
+        prompt += f"[{i}] {link['url'].strip()}\n"
+
+    prompt += """
+"""
+
+    return prompt
 
 # Reply to the post
 def reply(post_details, post_index, post_reply):
