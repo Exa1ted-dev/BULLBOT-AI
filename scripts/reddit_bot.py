@@ -52,7 +52,6 @@ def scrape_reddit_posts(subreddits, post_details, max_posts):
                 'permalink': post.permalink,
                 'subreddit': post.subreddit.display_name
             })
-            print(post_details)
 
             # Keep track of how many posts we have scraped during the loop
             post_count += 1

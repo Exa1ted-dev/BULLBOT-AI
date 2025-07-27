@@ -85,7 +85,6 @@ def generate_reply(prompt):
     result = response.json()
 
     raw_result = result['choices'][0]['message']['content']
-    print(raw_result)
 
     cleaned_result = strip_thinking(raw_result)
 
