@@ -33,9 +33,7 @@ def run_bot():
 
         # Summarize and extract source details
         print('begin summarize\n')
-        summaries = []
-        for source in sources:
-            summaries.append(summarize_article(source['url']))
+        summaries = [summary for source in sources if (summary := summarize_article(source['url'])) is not None]
 
         # Build the model final response prompt
         print('begin build prompt\n')

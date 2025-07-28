@@ -25,7 +25,7 @@ def classify_post_truth(post_title, post_body):
 # Search google for current, relevant sources to base responses on with SerpAPI
 def serpapi_search(query):
     params = {
-        'q': query,
+        'q': f"{query} -site:reddit.com",
         "api_key": SERPAPI_KEY,
         "engine": "google",
         "num": 3,
