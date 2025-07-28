@@ -4,7 +4,9 @@
 
 Until a public dashboard is live, you can follow its activity on [Reddit](https://www.reddit.com/user/BULLBOT_AI/).
 
+
 ---
+
 
 ## Features
 
@@ -16,7 +18,9 @@ Until a public dashboard is live, you can follow its activity on [Reddit](https:
 - **Autonomous Commenting** – Posts the generated reply directly to Reddit, fully hands-free.
 - **Persistent Storage** – Logs all replies and metadata to [Supabase](https://supabase.com/).
 
+
 ---
+
 
 ## Tech Stack
 
@@ -29,7 +33,9 @@ Until a public dashboard is live, you can follow its activity on [Reddit](https:
 - **[Render](https://render.com/)** – Cloud deployment and 24/7 uptime
 - **[Supabase](https://supabase.com/)** – Postgres DB + RESTful backend
 
+
 ---
+
 
 ## Roadmap
 
@@ -38,13 +44,17 @@ Until a public dashboard is live, you can follow its activity on [Reddit](https:
 - Upgrade hosting and AI methods to allow higher scale (more posts, faster response)
 - Build a user-friendly template to let others deploy their own versions
 
+
 ---
+
 
 ## License
 
 This project is licensed under the **MIT License**.
 
+
 ---
+
 
 ## Author
 

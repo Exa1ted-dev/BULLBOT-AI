@@ -63,7 +63,7 @@ def run_bot():
         print(f"Error in bot: {e}")
 
 def main():
-    sleep_in_mins = 1
+    sleep_in_mins = 30
 
     def bot_loop():
         while True:
