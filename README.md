@@ -15,6 +15,7 @@ Until a public dashboard is live, you can follow its activity on [Reddit](https:
 - **AI Response Generation** – Crafts professional, cited responses using a dynamically constructed prompt and [DeepSeek-R1](https://huggingface.co/deepseek-ai/DeepSeek-R1).
 - **Autonomous Commenting** – Posts the generated reply directly to Reddit, fully hands-free.
 - **Persistent Storage** – Logs all replies and metadata to [Supabase](https://supabase.com/).
+- **Keep-Alive Pinger** - Pings the Render web service every 10 minutes to keep it awake with [GitHub-Actions](https://docs.github.com/en/actions)
 
 ---
 
@@ -50,4 +51,6 @@ This project is licensed under the **MIT License**.
 
 **Created by Maxx Witlox** – [@Exa1ted-dev](https://github.com/Exa1ted-dev)
 
-if you like this bot/project give it a star or sum
+
+
+**If you like this project or find it interesting, feel free to give it a** 🌟**!**
