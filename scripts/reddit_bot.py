@@ -58,6 +58,8 @@ def scrape_reddit_posts(subreddits, post_details, max_posts):
             if post_count >= max_posts:
                 break
 
+            print(f'post {post_count}/{max_posts} found!\n')
+
             # Pause to avoid hitting Reddit too fast
             time.sleep(2)
 
