@@ -49,10 +49,10 @@ def run_bot():
 
         # Save reply details in external database
         print('begin db store\n')
-        success = save_reply(post_details['subreddit'],
-                            post_details['id'],
-                            post_details['title'],
-                            post_details['body_text'],
+        success = save_reply(post_details[chosen_post_index]['subreddit'],
+                            post_details[chosen_post_index]['id'],
+                            post_details[chosen_post_index]['title'],
+                            post_details[chosen_post_index]['body_text'],
                             post_reply,
                             sources,
                             )
