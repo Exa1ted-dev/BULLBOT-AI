@@ -2,7 +2,9 @@
 
 **BULLBOT** is an autonomous Reddit bot that runs 24/7 for free. It detects misinformation, verifies claims using real sources, and replies with AI-generated, fact-checked comments. It’s designed to patrol high-risk subreddits and help curb the spread of false or misleading content.
 
-Until a public dashboard is live, you can follow its activity on [Reddit](https://www.reddit.com/user/BULLBOT_AI/).
+Until a public dashboard is live, you can follow its activity on [Reddit](https://www.reddit.com/user/BULLBOT-AI/).
+
+
 
 ---
 

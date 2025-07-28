@@ -17,7 +17,7 @@ def run_bot():
 
         # Scrape some new Reddit posts
         print('begin scrape\n')
-        subreddits = reddit.subreddit("conspiracy+conspiracy_commons+antiVaxxers+COVID19_conspiracy+alternativehealth+WallStreetBets+FlatEarth+woo+NoNewNormal+China_Flu+aliens+nutrition+TheRedPill+MGTOW") # Subreddits to scrape posts from
+        subreddits = reddit.subreddit("conspiracy+conspiracy_commons+antiVaxxers+COVID19_conspiracy+alternativehealth+WallStreetBets+FlatEarth+woo+NoNewNormal+China_Flu+TheRedPill+MGTOW") # Subreddits to scrape posts from
         post_details = [] # List of posts scraped
         max_posts = 5 # How many posts to scrape per loop
         post_details = scrape_reddit_posts(subreddits, post_details, max_posts)
@@ -80,3 +80,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# Change server type
