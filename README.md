@@ -51,6 +51,4 @@ This project is licensed under the **MIT License**.
 
 **Created by Maxx Witlox** – [@Exa1ted-dev](https://github.com/Exa1ted-dev)
 
-
-
-**If you like this project or find it interesting, feel free to give it a** 🌟**!**
+**If you like this project or find it interesting, feel free to give it a** 🌟 **!**
