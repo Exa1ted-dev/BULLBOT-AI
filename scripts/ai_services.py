@@ -46,12 +46,7 @@ def serpapi_search(query):
 
 # Removes thinking text from the final model response
 def strip_thinking(text):
-    # Find text up to second think tag
-    match = re.search(r'(</think>.*?</think>)', text, re.DOTALL)
-    if match:
-        # Remove everything before second think tag
-        return text[match.end():].strip()
-    return text.strip()
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 # Generate a reply with Hugging Face Inference API
 def generate_reply(prompt):

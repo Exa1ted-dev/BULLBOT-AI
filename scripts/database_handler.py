@@ -6,7 +6,7 @@ import config
 SUPABASE_SERVICE_ROLE_KEY = config.SUPABASE_SERVICE_ROLE_KEY
 
 # Save reply information in Supabase database
-def save_reply(subreddit: str, reddit_post_id: str, reddit_post_title: str, reply_text: str, reddit_post_body: str, source_urls: str) -> bool:
+def save_reply(subreddit: str, reddit_post_id: str, reddit_post_title: str, reddit_post_body: str, reply_text: str, source_urls: str) -> bool:
     url = "https://eppbwrtvihnxjtwooyzn.supabase.co"
     supabase = create_client(url, SUPABASE_SERVICE_ROLE_KEY)
 
